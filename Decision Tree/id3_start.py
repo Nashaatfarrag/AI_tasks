@@ -40,10 +40,8 @@ def project_columns(data, columns_to_project):
 
     all_cols = list(range(0, len(data_h)))
 
-    columns_to_project_ix = [data['name_to_idx'][name]
-                             for name in columns_to_project]
-    columns_to_remove = [
-        cidx for cidx in all_cols if cidx not in columns_to_project_ix]
+    columns_to_project_ix = [data['name_to_idx'][name] for name in columns_to_project]
+    columns_to_remove = [cidx for cidx in all_cols if cidx not in columns_to_project_ix]
 
     for delc in sorted(columns_to_remove, reverse=True):
         del data_h[delc]
@@ -88,10 +86,10 @@ def get_class_labels(data, target_attribute):
 
 
 def entropy(n, labels):
-    ent = None  # initialize entropy
+    ent = 0
     for label in labels.keys():
-        p_x = None  # compute probability
-        ent += None  # compute probability
+        p_x = labels[label] / n
+        ent -=  p_x * math.log(p_x, 2)
     return ent
 
 
@@ -124,7 +122,7 @@ def avg_entropy_w_partitions(data, splitting_att, target_attribute):
         partition_n = len(partitioned_data['rows'])
         partition_labels = get_class_labels(partitioned_data, target_attribute)
         partition_entropy = entropy(partition_n, partition_labels)
-        avg_ent += None  # compute average en for each partition
+        avg_ent += partition_n / n * partition_entropy
 
     return avg_ent, partitions
 
@@ -155,9 +153,8 @@ def id3(data, uniqs, remaining_atts, target_attribute):
     max_info_gain_partitions = None
 
     for remaining_att in remaining_atts:
-        avg_ent, partitions = avg_entropy_w_partitions(
-            data, remaining_att, target_attribute)
-        info_gain = None  # compute info_gain
+        avg_ent, partitions = avg_entropy_w_partitions(data, remaining_att, target_attribute)
+        info_gain = ent - avg_ent
         if max_info_gain is None or info_gain > max_info_gain:
             max_info_gain = info_gain
             max_info_gain_att = remaining_att
@@ -180,8 +177,7 @@ def id3(data, uniqs, remaining_atts, target_attribute):
             node['nodes'][att_value] = {'label': most_common_label(labels)}
             continue
         partition = max_info_gain_partitions[att_value]
-        node['nodes'][att_value] = id3(
-            partition, uniqs, remaining_atts_for_subtrees, target_attribute)
+        node['nodes'][att_value] = id3(partition, uniqs, remaining_atts_for_subtrees, target_attribute)
 
     return node
 
@@ -234,5 +230,4 @@ def main():
     pretty_print_tree(root)
 
 
-if __name__ == "__main__":
-    main()
+if __name__ == "__main__": main()
